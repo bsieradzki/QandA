@@ -1,5 +1,6 @@
 import React from "react";
 import { QuestionData } from "./QuestionsData";
+import { Link } from 'react-router-dom';
 
 interface Props {
   data: QuestionData;
@@ -8,7 +9,10 @@ interface Props {
 
 export const Question = ({ data, showContent = true }: Props) => (
   <div>
+    <Link to={`/questions/${data.questionId}`}>
+    <div>{`Your link will be /questions/${data.questionId}`}</div>
     <div>Title: {data.title}</div>
+    </Link>
     <div>
       {data.content.length > 50
         ? `${data.content.substring(0, 50)}...`
@@ -24,6 +28,4 @@ export const Question = ({ data, showContent = true }: Props) => (
   </div>
 );
 
-// Question.defaultProps = {
-//   showContent: true,
-// };
+

@@ -1,6 +1,7 @@
 import React from "react";
 import { UserIcon } from "./Icons";
 import styles from "./Header.module.css";
+import { Link } from 'react-router-dom';
 
 export const Header = () => {
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -9,16 +10,16 @@ export const Header = () => {
 
   return (
     <div className={styles.container}>
-      <a href="./">Q & A</a>
+      <Link to="/">Q & A</Link>
       <input
         type="text"
         placeholder="Search..."
         onChange={handleSearchInputChange}
       />
-      <a href="./signin">
+      <Link to="signin">
         <UserIcon />
         <span>Sign In</span>
-      </a>
+      </Link>
     </div>
   );
 };

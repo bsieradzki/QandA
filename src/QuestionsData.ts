@@ -54,7 +54,21 @@ const questions: QuestionData[] = [
       "There seem to be a fair few state management tools around for React - React, Unstated, ... Which one should I use?",
     userName: "Bob",
     created: new Date(),
-    answers: [],
+    answers: [
+      {
+        answerId: 1,
+        content: "The interstate",
+        userName: "Jane",
+        created: new Date(),
+      },
+      {
+        answerId: 2,
+        content:
+          "You can manage all the states via Covid.",
+        userName: "Fred",
+        created: new Date(),
+      },
+    ],
   },
   {
     questionId: 3,
@@ -62,6 +76,29 @@ const questions: QuestionData[] = [
     content: "Why is javascript so loosy goosey weaked typed?",
     userName: "Cookie",
     created: new Date(),
-    answers: [],
+    answers: [
+      {
+        answerId: 1,
+        content: "Because you are a jackass!",
+        userName: "Jane",
+        created: new Date(),
+      },
+      {
+        answerId: 2,
+        content:
+          "Maybe because you're a loser?",
+        userName: "Fred",
+        created: new Date(),
+      },
+    ],
   },
 ];
+
+export const getQuestion = async (
+  questionId: number
+) : Promise<QuestionData | null> => {
+  await wait(500);
+  console.log("getQuestion for questionId == ", questionId);
+  const results = questions.filter(q => q.questionId === questionId);
+      return results.length === 0 ? null : results[0];
+};
