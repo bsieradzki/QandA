@@ -1,11 +1,16 @@
 import React from "react";
 import { UserIcon } from "./Icons";
 import styles from "./Header.module.css";
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 export const Header = () => {
+  const [searchParams] = useSearchParams();
+  const criteria = searchParams.get('criteria') || '';
+  const [search, setSearch] = React.useState(criteria);
+  
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log("You typed: " + e.currentTarget.value);
+    setSearch(e.currentTarget.value);
   };
 
   return (
@@ -14,6 +19,7 @@ export const Header = () => {
       <input
         type="text"
         placeholder="Search..."
+        value={search}
         onChange={handleSearchInputChange}
       />
       <Link to="signin">
