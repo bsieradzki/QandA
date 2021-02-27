@@ -19,7 +19,7 @@ export const getUnansweredQuestions = async (): Promise<QuestionData[]> => {
   return questions.filter((q) => q.answers.length === 0);
 };
 
-const wait = (ms: number): Promise<void> => {
+export const wait = (ms: number): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
