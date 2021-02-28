@@ -16,7 +16,7 @@ export interface AnswerData {
 
 export const getUnansweredQuestions = async (): Promise<QuestionData[]> => {
   await wait(500);
-  return questions.filter((q) => q.answers.length === 0);
+  return questions.filter((q) => q.answers.length === 0 || q.answers.length > 0);
 };
 
 export const wait = (ms: number): Promise<void> => {
