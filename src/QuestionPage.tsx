@@ -3,7 +3,7 @@ import { css } from '@emotion/react';
 import React from 'react';
 import { Page } from './Page'
 import { useParams } from 'react-router-dom';
-import { QuestionData, getQuestion } from './QuestionsData';
+import { QuestionData, getQuestion, doPostAnswer } from './QuestionsData';
 import { AnswerList } from './AnswerList';
 import {
     gray3,
@@ -13,7 +13,9 @@ import {
     FieldLabel,
     FieldTextArea,
     FormButtonContainer,
-    PrimaryButton
+    PrimaryButton,
+    FieldError,
+    SubmissionSuccess
 } from './Styles';
 import { useForm } from 'react-hook-form';
 
@@ -21,6 +23,11 @@ type FormData = {
     content: string;
 }
 export const QuestionPage = () => {
+
+    const [
+        successfullySubmitted,
+        setSuccessfullySubmitted
+    ] = React.useState(false);
 
     //destructure the route parameter via the useParams() hook
     const { questionId } = useParams();
@@ -36,12 +43,26 @@ export const QuestionPage = () => {
         };    
         if (questionId)
         {
+            console.log("QuestionPage.tsx calling doGetQuestion for questonId:", questionId);
             doGetQuestion(Number(questionId));
         }
     }, [questionId]);
 
-    const { register } = useForm<FormData>();
+    const { register, errors, handleSubmit, formState } = useForm<FormData>({
+        mode: "onBlur"
+    });
     
+    const submitForm = async (data: FormData) => {
+        console.log("QuestonPage.tsx in submitForm() about to call doPostAnswer:", question!.questionId, data.content);
+        const result = await doPostAnswer({
+            questionId: question!.questionId,
+            content: data.content,
+            userName: "Fred",
+            created: new Date(),
+        });
+        setSuccessfullySubmitted(result ? true : false);
+    };
+
     return (
     <Page> Question Page {questionId}
     <div>{question === null ? "null question returned?" : question.title}</div>
@@ -56,12 +77,16 @@ export const QuestionPage = () => {
             </div>
             <AnswerList data={question.answers} />
 
-            <form 
+            <form onSubmit={handleSubmit(submitForm)}
                 css={css`
                     margin-top: 20px;
                 `}
             >
-                <Fieldset>
+                <Fieldset
+                    disabled={
+                        formState.isSubmitting || successfullySubmitted
+                    }
+                >
                     <FieldContainer>
                         <FieldLabel htmlFor="content">
                             Your Answer
@@ -69,14 +94,39 @@ export const QuestionPage = () => {
                         <FieldTextArea
                             id="content"
                             name="content"
-                            ref={register}
+                            ref={register({
+                                required: true,
+                                minLength: 50
+                            })}
                         />
+                        {errors.content &&
+                            errors.content.type === "required" &&
+                            (
+                                <FieldError>
+                                    You must enter the answer.
+                                </FieldError>
+                            )
+                        }
+                        {errors.content &&
+                            errors.content.type == "minLength" &&
+                            (
+                                <FieldError>
+                                    The answer must be at least 50 characters :-)
+                                </FieldError>
+                            )
+                            }
                     </FieldContainer>
                     <FormButtonContainer>
                         <PrimaryButton type="submit">
                             Submit Your Answer
                         </PrimaryButton>
                     </FormButtonContainer>
+                    {successfullySubmitted && (
+                        
+                        <SubmissionSuccess>
+                            Your answer was successfully submitted!
+                        </SubmissionSuccess>
+                    )}
                 </Fieldset>
             </form>
 

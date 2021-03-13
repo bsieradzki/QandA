@@ -1,3 +1,5 @@
+import { Answer } from "./Answer";
+
 export interface QuestionData {
   questionId: number;
   title: string;
@@ -114,3 +116,44 @@ export const searchQuestions = async ( criteria: string): Promise<QuestionData[]
       q.content.toLowerCase().indexOf(criteria.toLowerCase()) >= 0
   );
 }
+
+export interface PostQuestionData {
+  title: string;
+  content: string;
+  userName: string;
+  created: Date;
+}
+
+export const postQuestion = async (
+  question: PostQuestionData,
+): Promise<QuestionData | undefined> => {
+  await wait(500);
+  const questionId = Math.max(...questions.map(q=>q.questionId)) + 1;
+  const newQuestion: QuestionData = {
+    ...question,
+    questionId,
+    answers: [],
+  };
+  questions.push(newQuestion);
+  return newQuestion;
+};
+
+export interface PostAnswerData {
+  questionId: number;
+  content: string;
+  userName: string;
+  created: Date;
+}
+
+export const doPostAnswer = async (answer: PostAnswerData) : Promise<AnswerData | undefined> => {
+  await wait (500);
+  const question = questions.filter(q => q.questionId === answer.questionId)[0];
+  const newAnswerId = Math.max(...question.answers.map(a => a.answerId)) + 1;
+  const answerInQuestion: AnswerData = {
+    answerId: newAnswerId,
+    ...answer
+  };
+  console.log("in doPostAnswer()...", answerInQuestion);
+  question.answers.push(answerInQuestion);
+  return answerInQuestion;
+};
