@@ -3,7 +3,7 @@ import { css } from '@emotion/react';
 import React from 'react';
 import { Page } from './Page'
 import { useParams } from 'react-router-dom';
-import { QuestionData, getQuestion, doPostAnswer } from './QuestionsData';
+import { getQuestion, doPostAnswer } from './QuestionsData';
 import { AnswerList } from './AnswerList';
 import {
     gray3,
@@ -18,11 +18,16 @@ import {
     SubmissionSuccess
 } from './Styles';
 import { useForm } from 'react-hook-form';
+import { useSelector, useDispatch } from 'react-redux';
+import { AppState, gettingQuestionAction, gotQuestionAction } from './Store';
 
 type FormData = {
     content: string;
 }
 export const QuestionPage = () => {
+
+    const dispatch = useDispatch();
+    const question = useSelector((state: AppState) => state.questions.viewing);
 
     const [
         successfullySubmitted,
@@ -32,15 +37,21 @@ export const QuestionPage = () => {
     //destructure the route parameter via the useParams() hook
     const { questionId } = useParams();
 
-    const [question, setQuestion] = React.useState<QuestionData | null>(null);
+    //we now use redux to manage state and no longer have local state
+    // const [question, setQuestion] = React.useState<QuestionData | null>(null);
 
     React.useEffect( () => {
+        
         const doGetQuestion = async (
             questionId: number
         )  => {
+            dispatch(gettingQuestionAction());
             const foundQuestion = await getQuestion(questionId);
-            setQuestion(foundQuestion);
+            //we now use redux and have no local state
+            //setQuestion(foundQuestion);
+            dispatch(gotQuestionAction(foundQuestion));
         };    
+        
         if (questionId)
         {
             console.log("QuestionPage.tsx calling doGetQuestion for questonId:", questionId);

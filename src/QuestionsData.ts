@@ -18,8 +18,9 @@ export interface AnswerData {
 }
 
 export const getUnansweredQuestions = async (): Promise<QuestionData[]> => {
-  await wait(500);
-  return questions.filter((q) => q.answers.length === 0 || q.answers.length > 0);
+  await wait(Math.random() * 1500);
+  //fixing this to only return unanswered questions
+  return questions.filter((q) => q.answers.length === 0);// || q.answers.length > 0);
 };
 
 export const wait = (ms: number): Promise<void> => {
@@ -94,6 +95,14 @@ const questions: QuestionData[] = [
         created: new Date(),
       },
     ],
+  },
+  {
+    questionId: 4,
+    title: "Is anyone going to answer my question?",
+    content: "This is a stupid question with no real answer...you are a loser if you answer this question!",
+    userName: "Twod",
+    created: new Date(),
+    answers: [],
   },
 ];
 
