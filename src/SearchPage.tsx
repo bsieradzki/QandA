@@ -15,13 +15,15 @@ export const SearchPage = () => {
     const [searchParams] = useSearchParams();
     const [questions, setQuestions] = React.useState<QuestionData[]>([]);
     const search = searchParams.get("criteria") || "";
-
+console.log('abc');
     React.useEffect(
         () => {
             const doSearch = async (criteria: string ) => {
+                console.log("SearchPage.tsx calling doSearch()", search);
                 const foundResults = await searchQuestions(criteria);
                 setQuestions(foundResults);
             };
+            console.log("SearchPage.tsx calling doSearch()", search);
             doSearch(search);            
         },
         [search]   

@@ -1,3 +1,4 @@
+import { title } from "node:process";
 import { Answer } from "./Answer";
 
 export interface QuestionData {
@@ -107,13 +108,47 @@ export const getQuestion = async (
 
 export const searchQuestions = async ( criteria: string): Promise<QuestionData[]> =>
 {
+  console.log("searchQuestions()", criteria);
   await wait(500);
+  
+  // const regExp = new RegExp(criteria, 'i');
+  // const result = questions.reduce((acc, {questionId, answers = []}) => {
+  //   const next = answers.filter(child => child.content.match(regExp));
 
+  //   if (title.match(regExp) || next.length > 0) {
+  //     acc.({title, children: next});
+  //   }
+  //   return acc;
+  // })
+
+  //so this filters on the question title or question content or any child answer's content but is case sensitive as-is
+  const res = questions.reduce((acc: QuestionData[], qd) => {
+    const matchedAnswers = qd.answers && qd.answers.filter(b => b.content.includes(criteria));
+    if(matchedAnswers && matchedAnswers.length) acc.push({...qd});
+    else if(qd.title.includes(criteria) || qd.content.includes(criteria)) acc.push({ ...qd });
+
+    return acc;
+  }, []);
+
+  //this filter uses match function and regular expression and is case insensitive
+  const regExp = new RegExp(criteria, "i");  
+  const reReult = questions.reduce((acc: QuestionData[], qd) => {
+    const matchedAnswers = qd.answers && qd.answers.filter(b => b.content.match(regExp));
+    if(matchedAnswers && matchedAnswers.length) acc.push({...qd});
+    else if(qd.title.match(regExp) || qd.content.match(regExp)) acc.push({ ...qd });
+
+    return acc;
+  }, []);
+
+  return reReult;
+  console.log("test res=", res);
   return questions.filter(
     q =>
-      q.title.toLowerCase().indexOf(criteria.toLowerCase()) >= 0
-      ||
-      q.content.toLowerCase().indexOf(criteria.toLowerCase()) >= 0
+      //q.title.toLowerCase().indexOf(criteria.toLowerCase()) >= 0
+      //||
+      //q.content.toLowerCase().indexOf(criteria.toLowerCase()) >= 0
+      //||
+      q.answers.filter(q => q.content.toLowerCase().indexOf(criteria.toLowerCase()) >= 0)
   );
 }
 
