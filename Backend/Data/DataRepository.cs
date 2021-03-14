@@ -107,7 +107,7 @@ namespace QandA.Data
             using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
-                connection.Execute(@"EXEC dbo.Queston_Put @QuestionId = @QuestionId, @Title = @Title, @Content = @Content",
+                connection.Execute(@"EXEC dbo.Question_Put @QuestionId = @QuestionId, @Title = @Title, @Content = @Content",
                     new {QuestionId = questionId, question.Title, question.Content}
                     );
                 return GetQuestion(questionId);
