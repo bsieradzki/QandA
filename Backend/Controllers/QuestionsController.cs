@@ -38,5 +38,16 @@ namespace QandA.Controllers
         {
             return _dataRepository.GetUnansweredQuestions();
         }
+
+        [HttpGet("{questionId}")]
+        public ActionResult<QuestionGetSingleResponse> GetQuestion(int questionId)
+        {
+            var question = _dataRepository.GetQuestion(questionId);
+            if (question == null)
+            {
+                return NotFound();
+            }
+            return question;
+        }
     }
 }

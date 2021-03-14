@@ -36,7 +36,7 @@ namespace QandA.Data
                     new { QuestionId = questionId });
                 if (question != null)
                 {
-                    question.Answers = connection.Query<AnswerGetResponse>(@"EXEC dbo,.Answer_Get_ByQuestionId @QuestionId = @QuestionId",
+                    question.Answers = connection.Query<AnswerGetResponse>(@"EXEC dbo.Answer_Get_ByQuestionId @QuestionId = @QuestionId",
                         new { QuestionId = questionId });
                 }
                 return question;
