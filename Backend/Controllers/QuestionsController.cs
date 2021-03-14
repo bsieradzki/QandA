@@ -88,7 +88,7 @@ namespace QandA.Controllers
         [HttpPost("answer")]
         public ActionResult<AnswerGetResponse> PostAnswer(AnswerPostRequest answerPostRequest)
         {
-            bool exists = _dataRepository.QuestionExists(answerPostRequest.QuestionId);
+            bool exists = _dataRepository.QuestionExists(answerPostRequest.QuestionId.Value);
             if (!exists)
             {
                 return NotFound();
