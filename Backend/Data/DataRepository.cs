@@ -119,7 +119,7 @@ namespace QandA.Data
             using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
-                connection.Execute(@"EXEC dbo.Question_Delete @QuestionId = QuestionId",
+                connection.Execute(@"EXEC dbo.Question_Delete @QuestionId = @QuestionId",
                     new { QuestionId = questionId });
             }
         }
