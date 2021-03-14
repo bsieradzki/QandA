@@ -82,7 +82,7 @@ namespace QandA.Data
             }
         }
 
-        public QuestionGetSingleResponse PostQuestion(QuestionPostRequest question)
+        public QuestionGetSingleResponse PostQuestion(QuestionPostFullRequest question)
         {
             using (var connection = new SqlConnection(_connectionString))
             {

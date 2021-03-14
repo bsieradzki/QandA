@@ -53,7 +53,14 @@ namespace QandA.Controllers
         [HttpPost]
         public ActionResult<QuestionGetSingleResponse> PostQuestion(QuestionPostRequest questionPostRequest)
         {
-            var savedQuestion = _dataRepository.PostQuestion(questionPostRequest);
+            var savedQuestion = _dataRepository.PostQuestion(new QuestionPostFullRequest
+            {
+                Title = questionPostRequest.Title,
+                Content = questionPostRequest.Content,
+                UserId = "1",
+                UserName = "some test user",
+                Created = DateTime.UtcNow
+            });
             return CreatedAtAction(nameof(GetQuestion),
                 new { questionId = savedQuestion.QuestionId },
                 savedQuestion);

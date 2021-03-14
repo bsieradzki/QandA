@@ -12,8 +12,5 @@ namespace QandA.Models
         public string Title { get; set; }
         [Required(ErrorMessage ="You are missing content details...add some content to your question and try again :-)")]
         public string Content { get; set; }
-        public string UserId { get; set; }
-        public string UserName { get; set; }
-        public DateTime Created { get; set; }
     }
 }
