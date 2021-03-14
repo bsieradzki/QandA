@@ -11,6 +11,6 @@ namespace QandA.Models
         public string Content { get; set; }
         public string UserId { get; set; }
         public string UserName { get; set; }
-        public string Created { get; set; }
+        public DateTime Created { get; set; }
     }
 }
