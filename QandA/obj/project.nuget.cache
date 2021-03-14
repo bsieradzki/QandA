@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "dgSpecHash": "bjBlgw2I1XpAErdzHJW5bTcnAPZJmPiQbxtdbT7BsbRXw8BMGb+y3xzeXssl/8Rr50ziM3XhoBAo3mJNN1Nz8A==",
+  "success": true,
+  "projectFilePath": "D:\\dev\\react\\QandA\\backend\\QandA\\QandA.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\bsieradzki\\.nuget\\packages\\microsoft.extensions.apidescription.server\\3.0.0\\microsoft.extensions.apidescription.server.3.0.0.nupkg.sha512",
+    "C:\\Users\\bsieradzki\\.nuget\\packages\\microsoft.openapi\\1.2.3\\microsoft.openapi.1.2.3.nupkg.sha512",
+    "C:\\Users\\bsieradzki\\.nuget\\packages\\swashbuckle.aspnetcore\\5.6.3\\swashbuckle.aspnetcore.5.6.3.nupkg.sha512",
+    "C:\\Users\\bsieradzki\\.nuget\\packages\\swashbuckle.aspnetcore.swagger\\5.6.3\\swashbuckle.aspnetcore.swagger.5.6.3.nupkg.sha512",
+    "C:\\Users\\bsieradzki\\.nuget\\packages\\swashbuckle.aspnetcore.swaggergen\\5.6.3\\swashbuckle.aspnetcore.swaggergen.5.6.3.nupkg.sha512",
+    "C:\\Users\\bsieradzki\\.nuget\\packages\\swashbuckle.aspnetcore.swaggerui\\5.6.3\\swashbuckle.aspnetcore.swaggerui.5.6.3.nupkg.sha512"
+  ],
+  "logs": []
+}
