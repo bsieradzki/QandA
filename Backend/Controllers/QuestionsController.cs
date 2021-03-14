@@ -100,7 +100,14 @@ namespace QandA.Controllers
             {
                 return NotFound();
             }
-            var savedAnswer = _dataRepository.PostAnswer(answerPostRequest);
+            var savedAnswer = _dataRepository.PostAnswer(new AnswerPostFullRequest
+            {
+                QuestionId = answerPostRequest.QuestionId.Value,
+                Content = answerPostRequest.Content,
+                UserId = "1",
+                UserName = "another test user",
+                Created = DateTime.UtcNow
+            });
             return savedAnswer;
         }
     }
