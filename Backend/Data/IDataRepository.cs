@@ -9,6 +9,7 @@ namespace QandA.Data
     public interface IDataRepository
     {
         IEnumerable<QuestionGetManyResponse> GetQuestions();
+        IEnumerable<QuestionGetManyResponse> GetQuestionsWithAnswers();
         IEnumerable<QuestionGetManyResponse> GetQuestionsBySearch(String search);
         IEnumerable<QuestionGetManyResponse> GetUnansweredQuestions();
         QuestionGetSingleResponse GetQuestion(int questionId);
