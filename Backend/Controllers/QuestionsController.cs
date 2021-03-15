@@ -14,10 +14,12 @@ namespace QandA.Controllers
     public class QuestionsController : ControllerBase
     {
         private readonly IDataRepository _dataRepository;
+        private readonly IQuestionCache _questionCache;
 
-        public QuestionsController(IDataRepository dataRepository)
+        public QuestionsController(IDataRepository dataRepository, IQuestionCache questionCache)
         {
             _dataRepository = dataRepository;
+            _questionCache = questionCache;
         }
 
         [HttpGet]
@@ -49,10 +51,18 @@ namespace QandA.Controllers
         [HttpGet("{questionId}")]
         public ActionResult<QuestionGetSingleResponse> GetQuestion(int questionId)
         {
-            var question = _dataRepository.GetQuestion(questionId);
+            var question = _questionCache.Get(questionId);
+
             if (question == null)
             {
-                return NotFound();
+                question = _dataRepository.GetQuestion(questionId);
+
+                if (question == null)
+                {
+                    return NotFound();
+                }
+
+                _questionCache.Set(question);
             }
             return question;
         }
@@ -84,6 +94,10 @@ namespace QandA.Controllers
             questionPutRequest.Title = string.IsNullOrEmpty(questionPutRequest.Title) ? question.Title : questionPutRequest.Title;
             questionPutRequest.Content = string.IsNullOrEmpty(questionPutRequest.Content) ? question.Content : questionPutRequest.Content;
             var savedQuestion = _dataRepository.PutQuestion(questionId, questionPutRequest);
+
+            //remove the edited quesiton from the cache
+            _questionCache.Remove(questionId);
+            
             return savedQuestion;
         }
 
@@ -96,6 +110,9 @@ namespace QandA.Controllers
                 return NotFound();
             }
             _dataRepository.DeleteQuestion(questionId);
+            
+            //remove the deleted quesiton from the cache
+            _questionCache.Remove(questionId);
             return NoContent();
         }
 
@@ -115,6 +132,10 @@ namespace QandA.Controllers
                 UserName = "another test user",
                 Created = DateTime.UtcNow
             });
+
+            //remove the question from the cache when posting an answer
+            _questionCache.Remove(answerPostRequest.QuestionId.Value);
+
             return savedAnswer;
         }
     }
