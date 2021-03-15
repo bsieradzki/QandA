@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Dapper;
+using static Dapper.SqlMapper;
 using QandA.Models;
 
 namespace QandA.Data
@@ -32,14 +33,32 @@ namespace QandA.Data
             using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
-                var question = connection.QuerySingleOrDefault<QuestionGetSingleResponse>(@"EXEC dbo.Question_GetSingle @QuestionId = @QuestionId",
-                    new { QuestionId = questionId });
-                if (question != null)
+                //this implementation makes two (2) round trips to the db
+                //var question = connection.QuerySingleOrDefault<QuestionGetSingleResponse>(@"EXEC dbo.Question_GetSingle @QuestionId = @QuestionId",
+                //    new { QuestionId = questionId });
+                //if (question != null)
+                //{
+                //    question.Answers = connection.Query<AnswerGetResponse>(@"EXEC dbo.Answer_Get_ByQuestionId @QuestionId = @QuestionId",
+                //        new { QuestionId = questionId });
+                //}
+                //return question;
+
+                //we will now use another feature of Dapper, multi-requests where Dapper will make multiple requests in a single round trip
+                using (GridReader results =
+                    connection.QueryMultiple(
+                        @"EXEC dbo.Question_GetSingle @QuestionId = @QuestionId;
+                          EXEC dbo.Answer_Get_ByQuestionId @QuestionId = @QuestionId",
+                            new {QuestionId = questionId}
+                        )
+                    )
                 {
-                    question.Answers = connection.Query<AnswerGetResponse>(@"EXEC dbo.Answer_Get_ByQuestionId @QuestionId = @QuestionId",
-                        new { QuestionId = questionId });
+                    var question = results.Read<QuestionGetSingleResponse>().FirstOrDefault();
+                    if (question != null)
+                    {
+                        question.Answers = results.Read<AnswerGetResponse>().ToList();
+                    }
+                    return question;
                 }
-                return question;
             }
         }
 
@@ -57,15 +76,47 @@ namespace QandA.Data
             using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
-                var questions = connection.Query<QuestionGetManyResponse>(@"EXEC dbo.Question_GetMany");
-                foreach (var question in questions)
-                {
-                    question.Answers = connection.Query<AnswerGetResponse>(
-                        @"EXEC dbo.Answer_Get_ByQuestionId @QuestionId = @QuestionId",
-                        new { QuestionId = question.QuestionId }
-                        ).ToList();
-                }
-                return questions;
+                //the implementation below demonstrates the N+1 problem where we iterate thru each result and issue another
+                //query...below this we will make a single round trip that returns all the data flattened
+                //we will then use Dapper's 'multi-mapping' feature to map the results to our object hierarchical structure...
+
+                //var questions = connection.Query<QuestionGetManyResponse>(@"EXEC dbo.Question_GetMany");
+                //foreach (var question in questions)
+                //{
+                //    question.Answers = connection.Query<AnswerGetResponse>(
+                //        @"EXEC dbo.Answer_Get_ByQuestionId @QuestionId = @QuestionId",
+                //        new { QuestionId = question.QuestionId }
+                //        ).ToList();
+                //}
+
+                //so the problem here is that there is no mapping...next try below
+                //var questions = connection.Query<QuestionGetManyResponse>(@"EXEC dbo.Question_GetMany_WithAnswers");
+
+                var questionDictionary = new Dictionary<int, QuestionGetManyResponse>();
+                return connection
+                    .Query<
+                    QuestionGetManyResponse,
+                    AnswerGetResponse,
+                    QuestionGetManyResponse>(
+                        @"EXEC dbo.Question_GetMany_WithAnswers",
+                        map: (q, a) =>
+                        {
+                            QuestionGetManyResponse question;
+
+                            if (!questionDictionary.TryGetValue(q.QuestionId, out question))
+                            {
+                                question = q;
+                                question.Answers = new List<AnswerGetResponse>();
+                                questionDictionary.Add(question.QuestionId, question);
+                            }
+                            question.Answers.Add(a);
+                            return question;
+                        },
+                        splitOn: "QuestionId"
+                        )
+                    .Distinct()
+                    .ToList();
+                //return questions;
             }
         }
 
@@ -80,6 +131,21 @@ namespace QandA.Data
             }
         }
 
+        public IEnumerable<QuestionGetManyResponse> GetQuestionBySearchWithPaging(String search, int pageNumber, int pageSize)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                var parameters = new
+                {
+                    Search = search,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize
+                };
+                return connection.Query<QuestionGetManyResponse>(@"EXEC dbo.Question_GetMany_BySearch_WithPaging 
+                        @Search = @Search, @PageNumber = @PageNumber, @PageSize = @PageSize", parameters);
+            }
+        }
 
         public IEnumerable<QuestionGetManyResponse> GetUnansweredQuestions()
         {

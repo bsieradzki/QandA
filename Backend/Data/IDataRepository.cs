@@ -11,6 +11,7 @@ namespace QandA.Data
         IEnumerable<QuestionGetManyResponse> GetQuestions();
         IEnumerable<QuestionGetManyResponse> GetQuestionsWithAnswers();
         IEnumerable<QuestionGetManyResponse> GetQuestionsBySearch(String search);
+        IEnumerable<QuestionGetManyResponse> GetQuestionBySearchWithPaging(String search, int pageNumber, int pageSize);
         IEnumerable<QuestionGetManyResponse> GetUnansweredQuestions();
         QuestionGetSingleResponse GetQuestion(int questionId);
         bool QuestionExists(int questionId);
