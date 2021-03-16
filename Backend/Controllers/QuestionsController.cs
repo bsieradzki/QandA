@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 using QandA.Data;
 using QandA.Models;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using Microsoft.Extensions.Configuration;
+using System.Net.Http;
+using System.Text.Json;
 
 namespace QandA.Controllers
 {
@@ -18,10 +22,16 @@ namespace QandA.Controllers
         private readonly IDataRepository _dataRepository;
         private readonly IQuestionCache _questionCache;
 
-        public QuestionsController(IDataRepository dataRepository, IQuestionCache questionCache)
+        private readonly IHttpClientFactory _clientFactory;
+        private readonly string _auth0UserInfo;
+
+        public QuestionsController(IDataRepository dataRepository, IQuestionCache questionCache, IHttpClientFactory clientFactory, IConfiguration configuration)
         {
             _dataRepository = dataRepository;
             _questionCache = questionCache;
+            _clientFactory = clientFactory;
+            _auth0UserInfo = $"{configuration["Auth0:Authority"]}userinfo";
+
         }
 
         [HttpGet]
@@ -50,6 +60,7 @@ namespace QandA.Controllers
             return await _dataRepository.GetUnansweredQuestionsAsync();
         }
 
+        [AllowAnonymous]
         [HttpGet("{questionId}")]
         public ActionResult<QuestionGetSingleResponse> GetQuestion(int questionId)
         {
@@ -71,14 +82,14 @@ namespace QandA.Controllers
 
         [Authorize]
         [HttpPost]
-        public ActionResult<QuestionGetSingleResponse> PostQuestion(QuestionPostRequest questionPostRequest)
+        public async Task<ActionResult<QuestionGetSingleResponse>> PostQuestion(QuestionPostRequest questionPostRequest)
         {
             var savedQuestion = _dataRepository.PostQuestion(new QuestionPostFullRequest
             {
                 Title = questionPostRequest.Title,
                 Content = questionPostRequest.Content,
-                UserId = "1",
-                UserName = "some test user",
+                UserId = User.FindFirst(ClaimTypes.NameIdentifier).Value,
+                UserName = await GetAuth0UserName(),
                 Created = DateTime.UtcNow
             });
             return CreatedAtAction(nameof(GetQuestion),
@@ -124,7 +135,7 @@ namespace QandA.Controllers
 
         [Authorize]
         [HttpPost("answer")]
-        public ActionResult<AnswerGetResponse> PostAnswer(AnswerPostRequest answerPostRequest)
+        public async Task<ActionResult<AnswerGetResponse>> PostAnswer(AnswerPostRequest answerPostRequest)
         {
             bool exists = _dataRepository.QuestionExists(answerPostRequest.QuestionId.Value);
             if (!exists)
@@ -135,8 +146,8 @@ namespace QandA.Controllers
             {
                 QuestionId = answerPostRequest.QuestionId.Value,
                 Content = answerPostRequest.Content,
-                UserId = "1",
-                UserName = "another test user",
+                UserId = User.FindFirst(ClaimTypes.NameIdentifier).Value,
+                UserName = await GetAuth0UserName(),
                 Created = DateTime.UtcNow
             });
 
@@ -144,6 +155,33 @@ namespace QandA.Controllers
             _questionCache.Remove(answerPostRequest.QuestionId.Value);
 
             return savedAnswer;
+        }
+
+        private async Task<String> GetAuth0UserName()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, _auth0UserInfo);
+            request.Headers.Add("Authorization", Request.Headers["Authorization"].First());
+
+            var client = _clientFactory.CreateClient();
+
+            var response = await client.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonContent = await response.Content.ReadAsStringAsync();
+                var user = JsonSerializer.Deserialize<Auth0User>(
+                    jsonContent,
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                return user.Name;
+            }
+            else
+            {
+                return "";
+            }
+
         }
     }
 }

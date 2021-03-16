@@ -86,6 +86,13 @@ namespace QandA
 
             //and the auth policy will need to access the http request
             services.AddHttpContextAccessor();
+
+            services.AddCors(options =>
+               options.AddPolicy("CorsPolicy", builder =>
+               builder
+                   .AllowAnyMethod()
+                   .AllowAnyHeader()
+                   .WithOrigins(Configuration["Frontend"])));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -110,6 +117,7 @@ namespace QandA
 
 
             app.UseRouting();
+            app.UseCors("CorsPolicy");
             app.UseAuthentication();
             app.UseAuthorization();
 
