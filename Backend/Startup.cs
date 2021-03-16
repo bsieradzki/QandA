@@ -13,6 +13,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using DbUp;
 using QandA.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Net;
 
 namespace QandA
 {
@@ -54,6 +56,20 @@ namespace QandA
 
             services.AddMemoryCache();
             services.AddSingleton<IQuestionCache, QuestionCache>();
+            
+            //This helped me troubleshoot autho0 setup; I was getting back more generic error message
+            //With this, I was able to see my Authority domain endpoint url was not correct, missing us.*
+            //Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true; //Add this line
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.Authority = Configuration["Auth0:Authority"];
+                options.Audience =  Configuration["Auth0:Audience"];
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -70,10 +86,15 @@ namespace QandA
                 app.UseHttpsRedirection();
             }
 
-            
+            //ServicePointManager.Expect100Continue = true;
+            //ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls
+            //| SecurityProtocolType.Tls11
+            //| SecurityProtocolType.Tls12;
+            //| SecurityProtocolType.Ssl3;
+
 
             app.UseRouting();
-
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
